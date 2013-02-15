@@ -158,3 +158,6 @@ Both replacements and the declaration are highlighted."
 
 (provide 'lang-refactor)
 
+;;; lang-refactor.el ends here
+
+
