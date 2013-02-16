@@ -1,5 +1,5 @@
-emacs-lang-refactor
-===================
+emacs-lang-refactor-perl
+========================
 
 Emacs - simple refactorings for Perl
 
