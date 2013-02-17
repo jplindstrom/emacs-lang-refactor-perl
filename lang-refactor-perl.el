@@ -5,7 +5,44 @@
 ;; Author: Johan Lindstrom <buzzwordninja not_this_bit@googlemail.com>
 ;; URL: https://github.com/jplindstrom/emacs-lang-refactor-perl
 ;; Version: 0.1.1
+;; Keywords: languages, refactoring, perl
 
+;; This program is free software: you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+;; This file is not part of GNU Emacs.
+
+;;
+;;; Commentary:
+;;
+;; Provides commands for simple refactorings for Perl, currently:
+;; * extract variable.
+;;
+
+;;
+;;; Installation:
+;;
+;; Put in load-path and require.
+;;
+
+;;
+;;; Usage:
+;;
+;; Mark a region of code you want to extract and then
+;;     M-x lr-extract-variable
+;;
+;; For more details, see the function documentation:
+;;     M-h f lr-extract-variable
 ;;
 ;; It's probably useful to bind it to a key. Make sure it ends with "e
 ;; v" (for Extract Variable) to make sure your reflexes are compatible
