@@ -109,6 +109,7 @@
   (search-forward "= " nil t)
   )
 
+;;;###autoload
 (defun lr-extract-variable (beg end)
   "Do refactoring 'extract Perl variable' of active region.
 
