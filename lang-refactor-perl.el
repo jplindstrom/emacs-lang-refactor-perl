@@ -141,7 +141,7 @@ Both replacements and the declaration are highlighted."
                        (format "Extract (%s) to variable: " expression)
                        variable-name-suggestion nil))
        (formatted-variable-name (propertize variable-name
-                                            'font-lock-face lr-extract-variable-face
+                                            ;; 'font-lock-face lr-extract-variable-face
                                             'category 'lr-edit
                                             ))
        (variable-declaration (format "my %s = %s;" formatted-variable-name expression))
@@ -152,13 +152,65 @@ Both replacements and the declaration are highlighted."
       (lr/replace-all-buffer expression formatted-variable-name)
       (lr/goto-earliest-usage variable-name)
       (lr/insert-declaration variable-declaration)
+      (lr/recreate-overlays 'lr-edit)
       )
     )
   )
 
 
+(defun lr/remove-overlays ()
+  "Remove all LR overlays"
+  (remove-overlays (point-min) (point-max) 'lt/overlay t))
+
+(defun lr/recreate-overlays (category)
+  "Remove all lr overlays and re-create them for sections with
+category lr-edit"
+  (lr/remove-overlays)
+  (save-excursion
+    (goto-char (point-min))
+    (while
+        (progn
+          (let* (
+                 (begin (text-property-any (point) (point-max) 'category category))
+                 (safe-begin (or begin (point-max)))
+                 (end (or ;; End of section, or end of buffer
+                       (text-property-not-all safe-begin (point-max) 'category category)
+                       (point-max)))
+                 )
+            (if (and begin (not (eq begin (point-max))))
+                (progn
+                  (message "JPL: debug: create overlay at (%s) (%s)" begin end)
+                  (lr/create-overlay-at begin end)
+                  (goto-char (+ 1 end))
+                  )
+              nil
+              )
+            )
+          )
+      )
+    )
+  )
+
+(defun lr/create-overlay-at (begin end)
+  "Create a highlight overlay between BEGIN and END"
+  (let* (
+         ;; (string (buffer-string begin end))
+         ;; (display-string (propertize string 'font-lock-face lr-extract-variable-face))
+         (overlay (make-overlay begin end))
+         )
+    (overlay-put overlay 'lr/overlay t)
+    ;; (overlay-put overlay 'display-string display-string)
+    ;; JPL: general names for tagged text and which face to apply
+    (overlay-put overlay 'face lr-extract-variable-face)
+    )
+  )
+
+
+(defvar lr/current-edits-overlay nil
+  "The overlay for the current edits")
+(make-variable-buffer-local 'lr/current-edits-overlay)
+
+
 (provide 'lang-refactor-perl)
 
 ;;; lang-refactor-perl.el ends here
-
-
