@@ -51,9 +51,9 @@
 ;;
 ;;
 ;; Suggested key bindings, forwards compatible with future
-;; refactorings and other features:
-;;    (global-set-key (kbd "\C-c e e v") 'lr-extract-variable)
-;;    (global-set-key (kbd "\C-c e h r") 'lr-remove-highlights)
+;; refactorings and other features (like "Toggle Highlight"):
+;;    (global-set-key (kbd "\C-c r e v") 'lr-extract-variable)
+;;    (global-set-key (kbd "\C-c r h r") 'lr-remove-highlights)
 ;;
 ;;
 
