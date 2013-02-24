@@ -107,7 +107,10 @@
   ;; if possible, find previous statement terminator ; or closing block }
   (when (search-backward-regexp "[;}]" nil t)
       (forward-line)
-      ;; TODO: skip forward over empty lines
+      (while (and
+              (looking-at "\n")
+              (not (eobp)))
+        (forward-line))
       )
   )
 
