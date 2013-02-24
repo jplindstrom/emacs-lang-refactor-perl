@@ -161,33 +161,46 @@ Both replacements and the declaration are highlighted."
 ;;;###autoload
 (defun lr-remove-highlights ()
   (interactive)
-  ;; JPL: TODO: really remove the highlights, don't just hide them
   (lr/remove-highlights 'lr-edit)
-  )
-
-;;;###autoload
-(defun lr-toggle-highlights ()
-  (interactive)
-  ;; JPL: TODO: really toggle the highlights, don't just show them
-  (lr/highlight 'lr-edit)
   )
 
 (defun lr/remove-highlights (category)
   "Remove all lr highlights from sections with CATEGORY"
-  (lr/set-face-property-when-tagged-with category font-lock-variable-name-face)
+  (lr/do-fn-for-catgory
+   category
+   (lambda (begin end)
+     ;; Restore face
+     (lr/set-face-property-at begin end font-lock-variable-name-face)
+     ;; Remove category tag, so it doesn't get highlighted again
+     (lr/remove-category-at begin end 'lr-edit)
+     )
+   )
+  )
+
+(defun lr/set-face-property-at (begin end face)
+  "Set the font-lock-face property to FACE between BEGIN and END"
+  (add-text-properties begin end (list 'font-lock-face face))
+  )
+
+(defun lr/remove-category-at (begin end category)
+  "Remove the category property CATEGORY between BEGIN and END"
+  (remove-text-properties begin end (list 'category category))
   )
 
 (defun lr/highlight (category)
-  "Highlight all sections with CATEGORY"
-  (lr/set-face-property-when-tagged-with category lr-extract-variable-face)
-  )
+  "Highlight all sections with category CATEGORY"
+  (lr/do-fn-for-catgory
+   category
+   (lambda (begin end)
+     (lr/set-face-property-at begin end lr-extract-variable-face)
+     )))
 
-(defun lr/set-face-property-when-tagged-with (category face)
-  "Set the face property to FACE in sections tagged with CATEGORY"
+(defun lr/do-fn-for-catgory (category do-fn)
+  "Call 'do-fn begin end' for sections tagged with CATEGORY"
   (save-excursion
     (goto-char (point-min))
     (while
-        (progn
+        (progn ;; JPL not needed
           (let* (
                  (begin (text-property-any (point) (point-max) 'category category))
                  (safe-begin (or begin (point-max)))
@@ -197,22 +210,14 @@ Both replacements and the declaration are highlighted."
                  )
             (if (and begin (not (eq begin (point-max))))
                 (progn
-                  (message "JPL: debug: create highlight at (%s) (%s)" begin end)
-                  (lr/highlight-at begin end face)
+                  (funcall do-fn begin end)
                   (goto-char (+ 1 end))
                   )
               nil
-              )
-            )
-          )
+              )))
       )
-    )
-  )
+    ))
 
-(defun lr/highlight-at (begin end face)
-  "Highlight the text between BEGIN and END"
-  (add-text-properties begin end (list 'font-lock-face face))
-  )
 
 
 (provide 'lang-refactor-perl)
