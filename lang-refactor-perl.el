@@ -152,20 +152,38 @@ Both replacements and the declaration are highlighted."
       (lr/replace-all-buffer expression formatted-variable-name)
       (lr/goto-earliest-usage variable-name)
       (lr/insert-declaration variable-declaration)
-      (lr/recreate-overlays 'lr-edit)
+      (lr/highlight 'lr-edit)
       )
     )
   )
 
 
-(defun lr/remove-overlays ()
-  "Remove all LR overlays"
-  (remove-overlays (point-min) (point-max) 'lt/overlay t))
+;;;###autoload
+(defun lr-remove-highlights ()
+  (interactive)
+  ;; JPL: TODO: really remove the highlights, don't just hide them
+  (lr/remove-highlights 'lr-edit)
+  )
 
-(defun lr/recreate-overlays (category)
-  "Remove all lr overlays and re-create them for sections with
-category lr-edit"
-  (lr/remove-overlays)
+;;;###autoload
+(defun lr-toggle-highlights ()
+  (interactive)
+  ;; JPL: TODO: really toggle the highlights, don't just show them
+  (lr/highlight 'lr-edit)
+  )
+
+(defun lr/remove-highlights (category)
+  "Remove all lr highlights from sections with CATEGORY"
+  (lr/set-face-property-when-tagged-with category font-lock-variable-name-face)
+  )
+
+(defun lr/highlight (category)
+  "Highlight all sections with CATEGORY"
+  (lr/set-face-property-when-tagged-with category lr-extract-variable-face)
+  )
+
+(defun lr/set-face-property-when-tagged-with (category face)
+  "Set the face property to FACE in sections tagged with CATEGORY"
   (save-excursion
     (goto-char (point-min))
     (while
@@ -179,8 +197,8 @@ category lr-edit"
                  )
             (if (and begin (not (eq begin (point-max))))
                 (progn
-                  (message "JPL: debug: create overlay at (%s) (%s)" begin end)
-                  (lr/create-overlay-at begin end)
+                  (message "JPL: debug: create highlight at (%s) (%s)" begin end)
+                  (lr/highlight-at begin end face)
                   (goto-char (+ 1 end))
                   )
               nil
@@ -191,24 +209,10 @@ category lr-edit"
     )
   )
 
-(defun lr/create-overlay-at (begin end)
-  "Create a highlight overlay between BEGIN and END"
-  (let* (
-         ;; (string (buffer-string begin end))
-         ;; (display-string (propertize string 'font-lock-face lr-extract-variable-face))
-         (overlay (make-overlay begin end))
-         )
-    (overlay-put overlay 'lr/overlay t)
-    ;; (overlay-put overlay 'display-string display-string)
-    ;; JPL: general names for tagged text and which face to apply
-    (overlay-put overlay 'face lr-extract-variable-face)
-    )
+(defun lr/highlight-at (begin end face)
+  "Highlight the text between BEGIN and END"
+  (add-text-properties begin end (list 'font-lock-face face))
   )
-
-
-(defvar lr/current-edits-overlay nil
-  "The overlay for the current edits")
-(make-variable-buffer-local 'lr/current-edits-overlay)
 
 
 (provide 'lang-refactor-perl)
