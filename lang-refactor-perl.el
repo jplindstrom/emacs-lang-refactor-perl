@@ -4,7 +4,7 @@
 ;;
 ;; Author: Johan Lindstrom <buzzwordninja not_this_bit@googlemail.com>
 ;; URL: https://github.com/jplindstrom/emacs-lang-refactor-perl
-;; Version: 0.1.2
+;; Version: 0.1.3
 ;; Keywords: languages, refactoring, perl
 
 ;; This program is free software: you can redistribute it and/or modify
@@ -41,13 +41,22 @@
 ;; Mark a region of code you want to extract and then
 ;;     M-x lr-extract-variable
 ;;
+;; All edits are highlighted. Once you've eye-balled the refactoring,
+;; run
+;;     M-x lr-remove-highlights
+;; to remove them.
+;;
 ;; For more details, see the function documentation:
 ;;     M-h f lr-extract-variable
 ;;
-;; It's probably useful to bind it to a key. Make sure it ends with "e
-;; v" (for Extract Variable) to make sure your reflexes are compatible
-;; with future refactorings.
 ;;
+;; Suggested key bindings, forwards compatible with future
+;; refactorings and other features:
+;;    (global-set-key (kbd "\C-c e e v") 'lr-extract-variable)
+;;    (global-set-key (kbd "\C-c e h r") 'lr-remove-highlights)
+;;
+;;
+
 
 
 ;;; Code:
