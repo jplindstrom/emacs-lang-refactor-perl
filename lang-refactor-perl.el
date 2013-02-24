@@ -4,7 +4,7 @@
 ;;
 ;; Author: Johan Lindstrom <buzzwordninja not_this_bit@googlemail.com>
 ;; URL: https://github.com/jplindstrom/emacs-lang-refactor-perl
-;; Version: 0.1.2
+;; Version: 0.1.3
 ;; Keywords: languages, refactoring, perl
 
 ;; This program is free software: you can redistribute it and/or modify
@@ -41,13 +41,22 @@
 ;; Mark a region of code you want to extract and then
 ;;     M-x lr-extract-variable
 ;;
+;; All edits are highlighted. Once you've eye-balled the refactoring,
+;; run
+;;     M-x lr-remove-highlights
+;; to remove them.
+;;
 ;; For more details, see the function documentation:
 ;;     M-h f lr-extract-variable
 ;;
-;; It's probably useful to bind it to a key. Make sure it ends with "e
-;; v" (for Extract Variable) to make sure your reflexes are compatible
-;; with future refactorings.
 ;;
+;; Suggested key bindings, forwards compatible with future
+;; refactorings and other features:
+;;    (global-set-key (kbd "\C-c e e v") 'lr-extract-variable)
+;;    (global-set-key (kbd "\C-c e h r") 'lr-remove-highlights)
+;;
+;;
+
 
 
 ;;; Code:
@@ -141,7 +150,7 @@ Both replacements and the declaration are highlighted."
                        (format "Extract (%s) to variable: " expression)
                        variable-name-suggestion nil))
        (formatted-variable-name (propertize variable-name
-                                            'font-lock-face lr-extract-variable-face
+                                            ;; 'font-lock-face lr-extract-variable-face
                                             'category 'lr-edit
                                             ))
        (variable-declaration (format "my %s = %s;" formatted-variable-name expression))
@@ -152,13 +161,74 @@ Both replacements and the declaration are highlighted."
       (lr/replace-all-buffer expression formatted-variable-name)
       (lr/goto-earliest-usage variable-name)
       (lr/insert-declaration variable-declaration)
+      (lr/highlight 'lr-edit)
       )
     )
   )
 
 
+;;;###autoload
+(defun lr-remove-highlights ()
+  (interactive)
+  (lr/remove-highlights 'lr-edit)
+  )
+
+(defun lr/remove-highlights (category)
+  "Remove all lr highlights from sections with CATEGORY"
+  (lr/do-fn-for-catgory
+   category
+   (lambda (begin end)
+     ;; Restore face
+     (lr/set-face-property-at begin end font-lock-variable-name-face)
+     ;; Remove category tag, so it doesn't get highlighted again
+     (lr/remove-category-at begin end 'lr-edit)
+     )
+   )
+  )
+
+(defun lr/set-face-property-at (begin end face)
+  "Set the font-lock-face property to FACE between BEGIN and END"
+  (add-text-properties begin end (list 'font-lock-face face))
+  )
+
+(defun lr/remove-category-at (begin end category)
+  "Remove the category property CATEGORY between BEGIN and END"
+  (remove-text-properties begin end (list 'category category))
+  )
+
+(defun lr/highlight (category)
+  "Highlight all sections with category CATEGORY"
+  (lr/do-fn-for-catgory
+   category
+   (lambda (begin end)
+     (lr/set-face-property-at begin end lr-extract-variable-face)
+     )))
+
+(defun lr/do-fn-for-catgory (category do-fn)
+  "Call 'do-fn begin end' for sections tagged with CATEGORY"
+  (save-excursion
+    (goto-char (point-min))
+    (while
+        (progn ;; JPL not needed
+          (let* (
+                 (begin (text-property-any (point) (point-max) 'category category))
+                 (safe-begin (or begin (point-max)))
+                 (end (or ;; End of section, or end of buffer
+                       (text-property-not-all safe-begin (point-max) 'category category)
+                       (point-max)))
+                 )
+            (if (and begin (not (eq begin (point-max))))
+                (progn
+                  (funcall do-fn begin end)
+                  (goto-char (+ 1 end))
+                  )
+              nil
+              )))
+      )
+    ))
+
+
+
 (provide 'lang-refactor-perl)
 
 ;;; lang-refactor-perl.el ends here
-
-
