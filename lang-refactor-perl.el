@@ -209,21 +209,20 @@ Both replacements and the declaration are highlighted."
   (save-excursion
     (goto-char (point-min))
     (while
-        (progn ;; JPL not needed
-          (let* (
-                 (begin (text-property-any (point) (point-max) 'category category))
-                 (safe-begin (or begin (point-max)))
-                 (end (or ;; End of section, or end of buffer
-                       (text-property-not-all safe-begin (point-max) 'category category)
-                       (point-max)))
-                 )
-            (if (and begin (not (eq begin (point-max))))
-                (progn
-                  (funcall do-fn begin end)
-                  (goto-char (+ 1 end))
-                  )
-              nil
-              )))
+        (let* (
+               (begin (text-property-any (point) (point-max) 'category category))
+               (safe-begin (or begin (point-max)))
+               (end (or ;; End of section, or end of buffer
+                     (text-property-not-all safe-begin (point-max) 'category category)
+                     (point-max)))
+               )
+          (if (and begin (not (eq begin (point-max))))
+              (progn
+                (funcall do-fn begin end)
+                (goto-char (+ 1 end))
+                )
+            nil
+            ))
       )
     ))
 
