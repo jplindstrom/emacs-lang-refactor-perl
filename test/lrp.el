@@ -42,22 +42,37 @@
      (cperl-mode)
      ,@body))
 
+(defmacro with-lrt-perl-file-select-string (file extract-string &rest body)
+  "Load FILE and find the last occurrence of EXTRACT-STRING and
+select it. BEG and END are bound to the locations where the
+selection is; the thing to extract."
+  `(with-lrt-perl-file
+    ,file
+    ;; Find the last occurrence
+    (goto-char (point-max))
+    (let* ((code-to-extract ,extract-string)
+           (beg (search-backward code-to-extract nil nil))
+           (end (search-forward code-to-extract nil nil))
+           )
+      ;; Select region of the text to extract
+      (push-mark beg)
+      (push-mark end  nil t)
+      ,@body
+      )
+    )
+  )
+
 (ert-deftest lrt-extract-variable--happy-path ()
   "Perform extract variable and check that everything lookd alright"
-  (with-lrt-perl-file
-   "before_01.pl"
-   ;; Find the last occurrence
-   (goto-char (point-max))
-   (let* ((code-to-extract "$oLocation->rhProperty")
-          (beg (search-backward code-to-extract))
-          (end (search-forward code-to-extract))
-          )
-     ;; Select region of the text to extract
-     (push-mark beg)
-     (push-mark end  nil t)
-     (lr-extract-variable beg end "$rhProperty")
-     )
 
+  ;;;; Setup
+  (with-lrt-perl-file-select-string
+   "before_01.pl" "$oLocation->rhProperty"
+
+   ;;;; Run
+   (lr-extract-variable beg end "$rhProperty")
+
+   ;;;; Test
    ;; Extraction did the right thing
    (should
     (string=
