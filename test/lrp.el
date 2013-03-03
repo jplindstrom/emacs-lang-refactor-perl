@@ -57,6 +57,9 @@
      (string=
       (buffer-substring-no-properties (point-min) (point-max))
       (lrt-data-file-string "after_01.pl")))
+    ;; Point located at extraction point
+    (should (looking-back "my $rhProperty = "))
+    (should (looking-at "$oLocation->rhProperty;"))
     )
   )
 
