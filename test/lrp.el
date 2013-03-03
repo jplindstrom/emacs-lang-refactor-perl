@@ -26,9 +26,32 @@
 (require 'ert)
 
 
-(ert-deftest lrt-checking ()
-  "Just checking how things work"
-  (should (string= "abc" "abc"))
+(defun lrt-data-file (file)
+  "Return file name of test data FILE"
+  (concat default-directory "data/" file))
+
+(ert-deftest lrt-extract-variable--happy-path ()
+  "Perform extract variable and check that everything lookd alright"
+  (with-temp-buffer
+    (insert-file-literally (lrt-data-file "before_01.pl"))
+
+    ;; Find the last occurrence
+    (goto-char (point-max))
+    (let* (
+           (code-to-extract "$oLocation->rhProperty")
+           (beg (search-backward code-to-extract))
+           (end (search-forward code-to-extract))
+           )
+      ;; Select region of the text to extract
+      (push-mark beg)
+      (push-mark end  nil t)
+      (lr-extract-variable beg end "$rhProperty")
+      )
+    (should
+     (string=
+      (buffer-substring-no-properties (point-min) (point-max))
+      "abc"))
+    )
   )
 
 
