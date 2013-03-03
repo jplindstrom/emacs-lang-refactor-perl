@@ -30,11 +30,17 @@
   "Return file name of test data FILE"
   (concat default-directory "data/" file))
 
+(defun lrt-data-file-string (file)
+  "Return the contents of data FILE as a string."
+  (with-temp-buffer
+    (insert-file-contents (lrt-data-file file))
+    (buffer-string)))
+
 (ert-deftest lrt-extract-variable--happy-path ()
   "Perform extract variable and check that everything lookd alright"
   (with-temp-buffer
     (insert-file-literally (lrt-data-file "before_01.pl"))
-
+    (cperl-mode)
     ;; Find the last occurrence
     (goto-char (point-max))
     (let* (
@@ -50,7 +56,7 @@
     (should
      (string=
       (buffer-substring-no-properties (point-min) (point-max))
-      "abc"))
+      (lrt-data-file-string "after_01.pl")))
     )
   )
 
