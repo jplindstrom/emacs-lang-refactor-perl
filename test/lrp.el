@@ -53,13 +53,21 @@
       (push-mark end  nil t)
       (lr-extract-variable beg end "$rhProperty")
       )
+
+    ;; Extraction did the right thing
     (should
      (string=
       (buffer-substring-no-properties (point-min) (point-max))
       (lrt-data-file-string "after_01.pl")))
+
     ;; Point located at extraction point
     (should (looking-back "my $rhProperty = "))
     (should (looking-at "$oLocation->rhProperty;"))
+
+    ;; Check we left a mark at starting point; Jump back
+    (pop-to-mark-command)
+    (should (looking-back "$rhProperty"))
+    (should (looking-at "->{podSection} = $podSection;"))
     )
   )
 
