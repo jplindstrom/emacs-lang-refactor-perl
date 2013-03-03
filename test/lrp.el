@@ -36,31 +36,58 @@
     (insert-file-contents (lrt-data-file file))
     (buffer-string)))
 
-(ert-deftest lrt-extract-variable--happy-path ()
-  "Perform extract variable and check that everything lookd alright"
-  (with-temp-buffer
-    (insert-file-literally (lrt-data-file "before_01.pl"))
-    (cperl-mode)
+(defmacro with-lrt-perl-file (file &rest body)
+  `(with-temp-buffer
+     (insert-file-literally (lrt-data-file ,file))
+     (cperl-mode)
+     ,@body))
+
+(defmacro with-lrt-perl-file-select-string (file extract-string &rest body)
+  "Load FILE and find the last occurrence of EXTRACT-STRING and
+select it. BEG and END are bound to the locations where the
+selection is; the thing to extract."
+  `(with-lrt-perl-file
+    ,file
     ;; Find the last occurrence
     (goto-char (point-max))
-    (let* (
-           (code-to-extract "$oLocation->rhProperty")
-           (beg (search-backward code-to-extract))
-           (end (search-forward code-to-extract))
+    (let* ((code-to-extract ,extract-string)
+           (beg (search-backward code-to-extract nil nil))
+           (end (search-forward code-to-extract nil nil))
            )
       ;; Select region of the text to extract
       (push-mark beg)
       (push-mark end  nil t)
-      (lr-extract-variable beg end "$rhProperty")
+      ,@body
       )
-    (should
-     (string=
-      (buffer-substring-no-properties (point-min) (point-max))
-      (lrt-data-file-string "after_01.pl")))
-    ;; Point located at extraction point
-    (should (looking-back "my $rhProperty = "))
-    (should (looking-at "$oLocation->rhProperty;"))
     )
+  )
+
+(ert-deftest lrt-extract-variable--happy-path ()
+  "Perform extract variable and check that everything lookd alright"
+
+  ;;;; Setup
+  (with-lrt-perl-file-select-string
+   "before_01.pl" "$oLocation->rhProperty"
+
+   ;;;; Run
+   (lr-extract-variable beg end "$rhProperty")
+
+   ;;;; Test
+   ;; Extraction did the right thing
+   (should
+    (string=
+     (buffer-substring-no-properties (point-min) (point-max))
+     (lrt-data-file-string "after_01.pl")))
+
+   ;; Point located at extraction point
+   (should (looking-back "my $rhProperty = "))
+   (should (looking-at "$oLocation->rhProperty;"))
+
+   ;; Check we left a mark at starting point; Jump back
+   (pop-to-mark-command)
+   (should (looking-back "$rhProperty"))
+   (should (looking-at "->{podSection} = $podSection;"))
+   )
   )
 
 
