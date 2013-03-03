@@ -124,7 +124,7 @@
   )
 
 ;;;###autoload
-(defun lr-extract-variable (beg end)
+(defun lr-extract-variable (beg end &optional arg-variable-name)
   "Do refactoring 'extract Perl variable' of active region.
 
 Ask the user for a variable name to extract the active region
@@ -151,10 +151,10 @@ Both replacements and the declaration are highlighted."
       ((should-narrow-to-defun (not current-prefix-arg))
        (expression (buffer-substring-no-properties beg end))
        (variable-name-suggestion (lr/get-variable-name expression))
-       (variable-name
-        (read-string
-         (format "Extract (%s) to variable: " expression)
-         variable-name-suggestion nil))
+       (variable-name (or arg-variable-name
+                          (read-string
+                           (format "Extract (%s) to variable: " expression)
+                           variable-name-suggestion nil)))
        (formatted-variable-name
         (propertize variable-name
                     ;; 'font-lock-face lr-extract-variable-face
