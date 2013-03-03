@@ -104,9 +104,11 @@
   ;; TODO: match word boundary to avoid substring matches
   (search-forward variable-name nil t)
 
-  ;; if possible, find previous statement terminator ; or closing block }
+  ;; if possible, find previous statement terminator ; or closing
+  ;; block }
   (when (search-backward-regexp "[;}]" nil t)
       (forward-line)
+      ;; If possible, go down past blank lines
       (while (and
               (looking-at "\n")
               (not (eobp)))
