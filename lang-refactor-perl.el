@@ -151,14 +151,17 @@ Both replacements and the declaration are highlighted."
       ((should-narrow-to-defun (not current-prefix-arg))
        (expression (buffer-substring-no-properties beg end))
        (variable-name-suggestion (lr/get-variable-name expression))
-       (variable-name (read-string
-                       (format "Extract (%s) to variable: " expression)
-                       variable-name-suggestion nil))
-       (formatted-variable-name (propertize variable-name
-                                            ;; 'font-lock-face lr-extract-variable-face
-                                            'category 'lr-edit
-                                            ))
-       (variable-declaration (format "my %s = %s;" formatted-variable-name expression))
+       (variable-name
+        (read-string
+         (format "Extract (%s) to variable: " expression)
+         variable-name-suggestion nil))
+       (formatted-variable-name
+        (propertize variable-name
+                    ;; 'font-lock-face lr-extract-variable-face
+                    'category 'lr-edit
+                    ))
+       (variable-declaration
+        (format "my %s = %s;" formatted-variable-name expression))
        )
     (save-restriction
       (when should-narrow-to-defun
@@ -214,13 +217,14 @@ Both replacements and the declaration are highlighted."
   (save-excursion
     (goto-char (point-min))
     (while
-        (let* (
-               (begin (text-property-any (point) (point-max) 'category category))
-               (safe-begin (or begin (point-max)))
-               (end (or ;; End of section, or end of buffer
-                     (text-property-not-all safe-begin (point-max) 'category category)
-                     (point-max)))
-               )
+        (let*
+            (
+             (begin (text-property-any (point) (point-max) 'category category))
+             (safe-begin (or begin (point-max)))
+             (end (or ;; End of section, or end of buffer
+                   (text-property-not-all safe-begin (point-max) 'category category)
+                   (point-max)))
+             )
           (if (and begin (not (eq begin (point-max))))
               (progn
                 (funcall do-fn begin end)
