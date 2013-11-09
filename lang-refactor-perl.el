@@ -4,7 +4,7 @@
 ;;
 ;; Author: Johan Lindstrom <buzzwordninja not_this_bit@googlemail.com>
 ;; URL: https://github.com/jplindstrom/emacs-lang-refactor-perl
-;; Version: 0.1.3
+;; Version: 0.1.4
 ;; Keywords: languages, refactoring, perl
 
 ;; This program is free software: you can redistribute it and/or modify
@@ -119,6 +119,13 @@
 ;; refactorings and other features (like "Toggle Highlight"):
 ;;    (global-set-key (kbd "\C-c r e v") 'lr-extract-variable)
 ;;    (global-set-key (kbd "\C-c r h r") 'lr-remove-highlights)
+;;
+;;
+;;; Changes
+;;
+;; 2013-11-09 - 0.1.4
+;;
+;; * Fixed matching to look at word boundaries
 ;;
 
 
