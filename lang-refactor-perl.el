@@ -140,6 +140,10 @@
 ;;   '(:background "red"))
 
 
+(defun lr/regex-end-word-boundary (str)
+  "Append a \\b to 'str' to make it match a word boundary"
+  (concat str "\\b"))
+
 (defun lr/open-line-above ()
   "Insert a newline above the current line and put point at beginning."
   (interactive)
@@ -158,15 +162,15 @@
 
 (defun lr/replace-all-buffer (search-for replace-with)
   (goto-char (point-min))
-  ;; TODO: match word boundary to avoid substring matches
-  (while (search-forward search-for nil t)
+  (while (search-forward-regexp
+          (lr/regex-end-word-boundary search-for) nil t)
     (replace-match replace-with nil nil))
   )
 
 (defun lr/goto-earliest-usage (variable-name)
   (goto-char (point-min))
-  ;; TODO: match word boundary to avoid substring matches
-  (search-forward variable-name nil t)
+  (search-forward-regexp
+   (lr/regex-end-word-boundary variable-name) nil t)
 
   ;; if possible, find previous statement terminator ; or closing
   ;; block }
@@ -206,8 +210,6 @@ prefix arg to change the entire buffer.
 
 Both replacements and the declaration are highlighted."
   (interactive "r")
-  ;; TODO: timer to remove highlighting after x seconds
-  ;; TODO:     using a nice fade
   (unless (and transient-mark-mode mark-active)
     (error "Select a self-contained piece of code to extract"))
   (set-mark-command nil)
