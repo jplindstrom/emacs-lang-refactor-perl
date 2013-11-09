@@ -10,11 +10,12 @@ Currently there's only:
 ## Installation:
 
 Put in load-path and initialize with:
-   (require 'lang-refactor-perl)
 
-   ;; Suggested key bindings
-   (global-set-key (kbd "\C-c r e v") 'lr-extract-variable)
-   (global-set-key (kbd "\C-c r h r") 'lr-remove-highlights)
+    (require 'lang-refactor-perl)
+ 
+    ;; Suggested key bindings
+    (global-set-key (kbd "\C-c r e v") 'lr-extract-variable)
+    (global-set-key (kbd "\C-c r h r") 'lr-remove-highlights)
 
 Note: This code is also part of Devel::PerlySense (install from
 CPAN), so if you're already using that, you won't need to install
@@ -61,7 +62,9 @@ suitable space.
 
 All edits are highlighted. Once you've eye-balled the refactoring,
 run
+
     M-x lr-remove-highlights
+
 to remove them. If you're not happy, just undo the edit.
 
 The mark was set, so you can jump back with "C-u C-SPC".
