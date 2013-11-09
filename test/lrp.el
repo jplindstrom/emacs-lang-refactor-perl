@@ -82,6 +82,7 @@ selection is; the thing to extract."
    ;; Point located at extraction point
    (should (looking-back "my $rhProperty = "))
    (should (looking-at "$oLocation->rhProperty;"))
+   (should (eq (line-number-at-pos) 18))
 
    ;; Check we left a mark at starting point; Jump back
    (pop-to-mark-command)
