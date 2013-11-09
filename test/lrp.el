@@ -90,6 +90,31 @@ selection is; the thing to extract."
    )
   )
 
+
+(ert-deftest lrt-extract-variable--replace-whole-words ()
+  "Make sure the replace and match are on word boundaries"
+
+  ;;;; Setup
+  (with-lrt-perl-file-select-string
+   "before_03.pl" "$oLocation->rhProperty"
+
+   ;;;; Run
+   (lr-extract-variable beg end "$rhProperty")
+
+   ;;;; Test
+   ;; Extraction did the right thing
+   (should
+    (string=
+     (buffer-substring-no-properties (point-min) (point-max))
+     (lrt-data-file-string "after_03.pl")))
+
+   ;; Point located at extraction point
+   (should (looking-back "my $rhProperty = "))
+   (should (looking-at "$oLocation->rhProperty;"))
+   (should (eq (line-number-at-pos) 8))
+  )
+)
+
 ;; Run tests at eval-buffer time
 (ert-run-tests-interactively "^lrt-")
 
