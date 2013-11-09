@@ -32,29 +32,93 @@
 ;;
 ;;; Installation:
 ;;
-;; Put in load-path and require.
+;; Put in load-path and initialize with:
+;;    (require 'lang-refactor-perl)
 ;;
-
+;;    ;; Suggested key bindings
+;;    (global-set-key (kbd "\C-c r e v") 'lr-extract-variable)
+;;    (global-set-key (kbd "\C-c r h r") 'lr-remove-highlights)
+;;
+;; Note: This code is also part of Devel::PerlySense (install from
+;; CPAN), so if you're already using that, you won't need to install
+;; this package. In that case the key bindings will be slightly
+;; different.
+;;
 ;;
 ;;; Usage:
 ;;
-;; Mark a region of code you want to extract and then
-;;     M-x lr-extract-variable
+;; Let's say you have a block of code with annoying small-scale duplication:
+;;
+;;     # Perl
+;;     sub customer_example {
+;;         my $self = shift;
+;;         my @customers = $self->schema->resultset("Customer")->all;
+;;         my $customer_row = $self->schema->resultset("Customer")->find($cust_id);
+;;     }
+;;
+;; Mark a region of code you want to extract, in this case
+;;
+;;     $self->schema
+;;
+;; and then type
+;;     C-c r e v (bound to M-x lr-extract-variable)
+;;
+;;
+;; You'll be asked for a variable name, with a suitable default (in
+;; this case "$schema").
+;;
+;; Hit return and all occurrences of $self->schema is replaced with
+;; $schema. Like this:
+;;
+;;     # Perl
+;;     sub customer_example {
+;;         my $self = shift;
+;;         my $schema = $self->schema;
+;;         my @customers = $schema->resultset("Customer")->all;
+;;         my $customer_row = $schema->resultset("Customer")->find($cust_id);
+;;     }
+;;
+;; The new variable "$schema" is declared and initialized before the
+;; first use, but you may well need to move it around to a more
+;; suitable space.
 ;;
 ;; All edits are highlighted. Once you've eye-balled the refactoring,
 ;; run
 ;;     M-x lr-remove-highlights
-;; to remove them.
+;; to remove them. If you're not happy, just undo the edit.
+;;
+;; The mark was set, so you can jump back with "C-u C-SPC".
+;;
+;; In this example, there's still duplication, so let's extract the
+;; resultset as well. Mark
+;;
+;;     $schema->resultset("Customer")
+;;
+;; and hit "C-c r e v" again. Edit the suggestion to "$customer_rs",
+;; and hit return. You'll end up with:
+;;
+;;     # Perl
+;;     sub customer_example {
+;;         my $self = shift;
+;;         my $schema = $self->schema;
+;;         my $customer_rs = $schema->resultset("Customer");
+;;         my @customers = $customer_rs->all;
+;;         my $customer_row = $customer_rs->find($cust_id);
+;;     }
+;;
+;; It's up to you to mark syntactically relevant portions of the
+;; code.
+;;
+;;
 ;;
 ;; For more details, see the function documentation:
-;;     M-h f lr-extract-variable
+;;     C-c r e v (bound to M-h f lr-extract-variable)
 ;;
 ;;
 ;; Suggested key bindings, forwards compatible with future
 ;; refactorings and other features (like "Toggle Highlight"):
 ;;    (global-set-key (kbd "\C-c r e v") 'lr-extract-variable)
 ;;    (global-set-key (kbd "\C-c r h r") 'lr-remove-highlights)
-;;
 ;;
 
 
@@ -104,9 +168,11 @@
   ;; TODO: match word boundary to avoid substring matches
   (search-forward variable-name nil t)
 
-  ;; if possible, find previous statement terminator ; or closing block }
+  ;; if possible, find previous statement terminator ; or closing
+  ;; block }
   (when (search-backward-regexp "[;}]" nil t)
       (forward-line)
+      ;; If possible, go down past blank lines
       (while (and
               (looking-at "\n")
               (not (eobp)))
@@ -122,7 +188,7 @@
   )
 
 ;;;###autoload
-(defun lr-extract-variable (beg end)
+(defun lr-extract-variable (beg end &optional arg-variable-name)
   "Do refactoring 'extract Perl variable' of active region.
 
 Ask the user for a variable name to extract the active region
@@ -149,14 +215,17 @@ Both replacements and the declaration are highlighted."
       ((should-narrow-to-defun (not current-prefix-arg))
        (expression (buffer-substring-no-properties beg end))
        (variable-name-suggestion (lr/get-variable-name expression))
-       (variable-name (read-string
-                       (format "Extract (%s) to variable: " expression)
-                       variable-name-suggestion nil))
-       (formatted-variable-name (propertize variable-name
-                                            ;; 'font-lock-face lr-extract-variable-face
-                                            'category 'lr-edit
-                                            ))
-       (variable-declaration (format "my %s = %s;" formatted-variable-name expression))
+       (variable-name (or arg-variable-name
+                          (read-string
+                           (format "Extract (%s) to variable: " expression)
+                           variable-name-suggestion nil)))
+       (formatted-variable-name
+        (propertize variable-name
+                    ;; 'font-lock-face lr-extract-variable-face
+                    'category 'lr-edit
+                    ))
+       (variable-declaration
+        (format "my %s = %s;" formatted-variable-name expression))
        )
     (save-restriction
       (when should-narrow-to-defun
@@ -212,13 +281,14 @@ Both replacements and the declaration are highlighted."
   (save-excursion
     (goto-char (point-min))
     (while
-        (let* (
-               (begin (text-property-any (point) (point-max) 'category category))
-               (safe-begin (or begin (point-max)))
-               (end (or ;; End of section, or end of buffer
-                     (text-property-not-all safe-begin (point-max) 'category category)
-                     (point-max)))
-               )
+        (let*
+            (
+             (begin (text-property-any (point) (point-max) 'category category))
+             (safe-begin (or begin (point-max)))
+             (end (or ;; End of section, or end of buffer
+                   (text-property-not-all safe-begin (point-max) 'category category)
+                   (point-max)))
+             )
           (if (and begin (not (eq begin (point-max))))
               (progn
                 (funcall do-fn begin end)
