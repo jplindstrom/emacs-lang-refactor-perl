@@ -210,8 +210,6 @@ prefix arg to change the entire buffer.
 
 Both replacements and the declaration are highlighted."
   (interactive "r")
-  ;; TODO: timer to remove highlighting after x seconds
-  ;; TODO:     using a nice fade
   (unless (and transient-mark-mode mark-active)
     (error "Select a self-contained piece of code to extract"))
   (set-mark-command nil)
