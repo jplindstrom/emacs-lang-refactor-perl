@@ -90,5 +90,7 @@ selection is; the thing to extract."
    )
   )
 
+;; Run tests at eval-buffer time
+(ert-run-tests-interactively "^lrt-")
 
 ;;; test/ert.el ends here
