@@ -4,7 +4,7 @@
 ;;
 ;; Author: Johan Lindstrom <buzzwordninja not_this_bit@googlemail.com>
 ;; URL: https://github.com/jplindstrom/emacs-lang-refactor-perl
-;; Version: 0.1.4
+;; Version: 0.1.5
 ;; Keywords: languages, refactoring, perl
 
 ;; This program is free software: you can redistribute it and/or modify
