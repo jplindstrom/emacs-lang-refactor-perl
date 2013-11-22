@@ -117,7 +117,7 @@ selection is; the thing to extract."
 )
 
 (ert-deftest lrt-extract-variable--replace-string-literals ()
-  "Make sure the replace and match are on word boundaries"
+  "Make sure the replace and match work with string literals"
 
   ;;;; Setup
   (with-lrt-perl-file-select-string
@@ -136,6 +136,30 @@ selection is; the thing to extract."
    ;; Point located at extraction point
    (should (looking-back "my $key = "))
    (should (looking-at "\"pod\";"))
+   (should (eq (line-number-at-pos) 8))
+  )
+)
+
+(ert-deftest lrt-extract-variable--replace-array-indices ()
+  "Make sure the replace and match work with e.g. $abc{def}"
+
+  ;;;; Setup
+  (with-lrt-perl-file-select-string
+   "before_05.pl" "$abc{def}"
+
+   ;;;; Run
+   (lr-extract-variable beg end "$key")
+
+   ;;;; Test
+   ;; Extraction did the right thing
+   (should
+    (string=
+     (buffer-substring-no-properties (point-min) (point-max))
+     (lrt-data-file-string "after_05.pl")))
+
+   ;; Point located at extraction point
+   (should (looking-back "my $key = "))
+   (should (looking-at "$abc{def};"))
    (should (eq (line-number-at-pos) 8))
   )
 )

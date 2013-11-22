@@ -132,6 +132,10 @@
 
 ;;; Code:
 
+(defun lr/debug (value &optional mess)
+  (prin1 value)
+  (message "^^ JPL %s" (or mess ""))
+  )
 
 ;; TODO: defcustom
 (defvar lr-extract-variable-face
@@ -175,13 +179,12 @@ END-WORD-BOUNDARY is true"
 (defun lr/replace-all-buffer (search-for replace-with)
   (goto-char (point-min))
   (let* ((quoted-search-for (regexp-quote search-for))
-         (ends-at-word-boundary (string-match "\\b\\$" search-for))
+         (ends-at-word-boundary (string-match "[a-zA-Z0-9_]$" search-for 1))
          (search-for-rex (lr/regex-end-word-boundary quoted-search-for ends-at-word-boundary))
          )
-    ;; (prin1 search-for)
-    ;; (prin1 quoted-search-for)
-    ;; (prin1 ends-at-word-boundary) ;; Wrong, but works (why is \\b\\$ matching 0 ???)
-    ;; (prin1 search-for-rex)
+    ;; (lr/debug quoted-search-for)
+    ;; (lr/debug ends-at-word-boundary "ends-at-word-boundary")
+    ;; (lr/debug search-for-rex "search-for-rex")
     (while (search-forward-regexp
             search-for-rex nil t)
       (replace-match replace-with nil nil))
