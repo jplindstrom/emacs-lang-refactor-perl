@@ -4,7 +4,7 @@
 ;;
 ;; Author: Johan Lindstrom <buzzwordninja not_this_bit@googlemail.com>
 ;; URL: https://github.com/jplindstrom/emacs-lang-refactor-perl
-;; Version: 0.1.4
+;; Version: 0.1.5
 ;; Keywords: languages, refactoring, perl
 
 ;; This program is free software: you can redistribute it and/or modify
@@ -123,6 +123,11 @@
 ;;
 ;;; Changes
 ;;
+;; 2013-11-22 - 0.1.5
+;;
+;; * No really, fixed word boundaries properly
+;;
+;;
 ;; 2013-11-09 - 0.1.4
 ;;
 ;; * Fixed matching to look at word boundaries
@@ -132,6 +137,10 @@
 
 ;;; Code:
 
+(defun lr/debug (value &optional mess)
+  (prin1 value)
+  (message "^^ JPL %s" (or mess ""))
+  )
 
 ;; TODO: defcustom
 (defvar lr-extract-variable-face
@@ -147,9 +156,14 @@
 ;;   '(:background "red"))
 
 
-(defun lr/regex-end-word-boundary (str)
-  "Append a \\b to 'str' to make it match a word boundary"
-  (concat str "\\b"))
+(defun lr/regex-end-word-boundary (str end-word-boundary)
+  "Append a \\b to STR to make it match a word boundary if
+END-WORD-BOUNDARY is true"
+  (if end-word-boundary
+      (concat str "\\b")
+    str
+    )
+  )
 
 (defun lr/open-line-above ()
   "Insert a newline above the current line and put point at beginning."
@@ -169,15 +183,23 @@
 
 (defun lr/replace-all-buffer (search-for replace-with)
   (goto-char (point-min))
-  (while (search-forward-regexp
-          (lr/regex-end-word-boundary search-for) nil t)
-    (replace-match replace-with nil nil))
+  (let* ((quoted-search-for (regexp-quote search-for))
+         (ends-at-word-boundary (string-match "[a-zA-Z0-9_]$" search-for 1))
+         (search-for-rex (lr/regex-end-word-boundary quoted-search-for ends-at-word-boundary))
+         )
+    ;; (lr/debug quoted-search-for)
+    ;; (lr/debug ends-at-word-boundary "ends-at-word-boundary")
+    ;; (lr/debug search-for-rex "search-for-rex")
+    (while (search-forward-regexp
+            search-for-rex nil t)
+      (replace-match replace-with nil nil))
+    )
   )
 
 (defun lr/goto-earliest-usage (variable-name)
   (goto-char (point-min))
   (search-forward-regexp
-   (lr/regex-end-word-boundary variable-name) nil t)
+   (lr/regex-end-word-boundary variable-name t) nil t)
 
   ;; if possible, find previous statement terminator ; or closing
   ;; block }
