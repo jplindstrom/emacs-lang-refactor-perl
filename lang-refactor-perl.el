@@ -123,6 +123,11 @@
 ;;
 ;;; Changes
 ;;
+;; 2013-11-22 - 0.1.5
+;;
+;; * No really, fixed word boundaries properly
+;;
+;;
 ;; 2013-11-09 - 0.1.4
 ;;
 ;; * Fixed matching to look at word boundaries
